@@ -15,7 +15,7 @@ import Icon from '@/components/ui/icon';
 import WordPressExporter from '@/components/WordPressExporter';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 import ConversationEditor from '@/components/ConversationEditor';
-import PrivacySystem from '@/components/PrivacySystem';
+
 
 interface Bot {
   id: string;
@@ -79,22 +79,7 @@ const AdminPanel = () => {
     }
   ]);
 
-  const [userMessages, setUserMessages] = useState<ChatMessage[]>([
-    {
-      id: 'msg_1',
-      user_name: 'Алексей',
-      message: 'Привет! Расскажите про новые возможности ИИ в веб-разработке',
-      time: '14:30',
-      replied: false
-    },
-    {
-      id: 'msg_2',
-      user_name: 'Мария',
-      message: 'Какие инструменты лучше использовать для создания чат-ботов?',
-      time: '14:25',
-      replied: true
-    }
-  ]);
+  const [userMessages, setUserMessages] = useState<ChatMessage[]>([]);
 
   const [telegramSettings, setTelegramSettings] = useState<TelegramSettings>({
     botToken: '',
@@ -132,10 +117,18 @@ const AdminPanel = () => {
     const savedTelegram = localStorage.getItem('telegramSettings');
     const savedDesign = localStorage.getItem('designSettings');
     const savedTab = localStorage.getItem('admin-tab');
+    const savedUserMessages = localStorage.getItem('userMessages');
 
     if (savedBots) setBots(JSON.parse(savedBots));
     if (savedTelegram) setTelegramSettings(JSON.parse(savedTelegram));
     if (savedDesign) setDesignSettings(JSON.parse(savedDesign));
+    if (savedUserMessages) {
+      try {
+        setUserMessages(JSON.parse(savedUserMessages));
+      } catch (e) {
+        console.error('Error loading user messages:', e);
+      }
+    }
     
     // Открываем нужную вкладку если задано
     if (savedTab) {
@@ -146,9 +139,39 @@ const AdminPanel = () => {
 
   // Сохранение настроек
   const saveSettings = () => {
-    localStorage.setItem('adminBots', JSON.stringify(bots));
-    localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
-    localStorage.setItem('designSettings', JSON.stringify(designSettings));
+    try {
+      localStorage.setItem('adminBots', JSON.stringify(bots));
+      localStorage.setItem('telegramSettings', JSON.stringify(telegramSettings));
+      localStorage.setItem('designSettings', JSON.stringify(designSettings));
+      localStorage.setItem('userMessages', JSON.stringify(userMessages));
+      
+      // Показываем уведомление
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = '✅ Настройки сохранены!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+      
+      console.log('✅ Настройки успешно сохранены');
+    } catch (error) {
+      console.error('❌ Ошибка при сохранении:', error);
+      
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = '❌ Ошибка при сохранении!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
   };
 
   // Добавление нового бота
@@ -169,13 +192,17 @@ const AdminPanel = () => {
     setBots(prev => [...prev, bot]);
     setNewBot({ displayName: '', avatar_color: '#6C5CE7', personality: '' });
     setShowAddBot(false);
-    saveSettings();
+    
+    // Автосохранение
+    setTimeout(saveSettings, 100);
   };
 
   // Удаление бота
   const handleDeleteBot = (botId: string) => {
-    setBots(prev => prev.filter(bot => bot.id !== botId));
-    saveSettings();
+    if (confirm('Вы уверены, что хотите удалить этого бота?')) {
+      setBots(prev => prev.filter(bot => bot.id !== botId));
+      setTimeout(saveSettings, 100);
+    }
   };
 
   // Переключение активности бота
@@ -183,7 +210,7 @@ const AdminPanel = () => {
     setBots(prev => prev.map(bot => 
       bot.id === botId ? { ...bot, isActive: !bot.isActive } : bot
     ));
-    saveSettings();
+    setTimeout(saveSettings, 100);
   };
 
   // Тестирование Telegram подключения
@@ -226,11 +253,31 @@ const AdminPanel = () => {
 
   // Применение дизайна
   const applyDesign = () => {
-    // Здесь будет логика применения настроек дизайна к основному чату
-    document.documentElement.style.setProperty('--primary-color', designSettings.primaryColor);
-    document.documentElement.style.setProperty('--secondary-color', designSettings.secondaryColor);
-    document.documentElement.style.setProperty('--accent-color', designSettings.accentColor);
-    saveSettings();
+    try {
+      // Применяем CSS переменные
+      document.documentElement.style.setProperty('--primary-color', designSettings.primaryColor);
+      document.documentElement.style.setProperty('--secondary-color', designSettings.secondaryColor);
+      document.documentElement.style.setProperty('--accent-color', designSettings.accentColor);
+      document.documentElement.style.setProperty('--background-color', designSettings.backgroundColor);
+      
+      saveSettings();
+      
+      // Показываем уведомление
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = '✨ Дизайн применён!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+      
+      console.log('✨ Дизайн успешно применён');
+    } catch (error) {
+      console.error('❌ Ошибка при применении дизайна:', error);
+    }
   };
 
   const presetColors = [
@@ -284,7 +331,7 @@ const AdminPanel = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-8 lg:w-fit">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <Icon name="BarChart3" size={16} />
               <span>Панель управления</span>
@@ -305,10 +352,7 @@ const AdminPanel = () => {
               <Icon name="MessageSquare" size={16} />
               <span>Сообщения</span>
             </TabsTrigger>
-            <TabsTrigger value="privacy" className="flex items-center space-x-2">
-              <Icon name="Shield" size={16} />
-              <span>Приватность</span>
-            </TabsTrigger>
+
             <TabsTrigger value="telegram" className="flex items-center space-x-2">
               <Icon name="Send" size={16} />
               <span>Telegram</span>
@@ -586,10 +630,7 @@ const AdminPanel = () => {
             </div>
           </TabsContent>
 
-          {/* Система приватности */}
-          <TabsContent value="privacy" className="space-y-6">
-            <PrivacySystem />
-          </TabsContent>
+
 
           {/* Настройки Telegram */}
           <TabsContent value="telegram" className="space-y-6">

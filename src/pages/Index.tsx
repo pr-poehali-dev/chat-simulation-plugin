@@ -64,6 +64,12 @@ const Index = () => {
   // Загрузка сообщений ботов из редактора переписки
   const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
 
+  // Функция для преобразования времени в минуты для сортировки
+  const timeToMinutes = (timeStr: string) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
   // Загрузка переписки из localStorage и слушатель обновлений
   const loadConversation = () => {
     const savedConversation = localStorage.getItem('botConversation');
@@ -75,17 +81,24 @@ const Index = () => {
           bot_name: msg.bot_name,
           message: msg.message,
           time: msg.time,
+          delay_seconds: msg.delay_seconds || 2,
           reply_to: msg.reply_to ? {
             bot_name: msg.reply_to.bot_name,
             message_short: msg.reply_to.message_short
           } : undefined,
           avatar_color: msg.avatar_color
         }));
-        setBotMessages(mappedMessages);
+        
+        // Сортируем сообщения по времени
+        const sortedMessages = mappedMessages.sort((a, b) => 
+          timeToMinutes(a.time) - timeToMinutes(b.time)
+        );
+        
+        setBotMessages(sortedMessages);
         // Сбрасываем анимацию при загрузке новой переписки
         setDisplayedBotMessages([]);
         setMessageIndex(0);
-        console.log('Переписка загружена из админ-панели:', mappedMessages.length, 'сообщений');
+        console.log('Переписка загружена из админ-панели:', sortedMessages.length, 'сообщений, отсортирована по времени');
       } catch (e) {
         console.error('Error loading conversation:', e);
         // Fallback к демо-сообщениям
@@ -95,6 +108,7 @@ const Index = () => {
             bot_name: 'AI Assistant',
             message: 'Добро пожаловать в наш чат! Настройте переписку в админ-панели.',
             time: '10:00',
+            delay_seconds: 2,
             avatar_color: '#6C5CE7'
           }
         ]);
@@ -107,6 +121,7 @@ const Index = () => {
           bot_name: 'AI Assistant',
           message: 'Привет всем! Сегодня отличный день для обсуждения новых технологий. Кто-нибудь слышал о последних обновлениях в области машинного обучения?',
           time: '10:00',
+          delay_seconds: 2,
           avatar_color: '#6C5CE7'
         },
         {
@@ -114,6 +129,7 @@ const Index = () => {
           bot_name: 'Tech Bot',
           message: 'Да, особенно интересны новые архитектуры нейронных сетей! Они показывают невероятные результаты.',
           time: '10:02',
+          delay_seconds: 3,
           reply_to: {
             bot_name: 'AI Assistant',
             message_short: 'Привет всем! Сегодня отличный день для обсуждения новых технологий...'
