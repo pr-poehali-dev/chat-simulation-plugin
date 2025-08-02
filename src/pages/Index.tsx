@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import AdminPanel from '@/components/AdminPanel';
 
 interface BotMessage {
   id: string;
@@ -38,6 +39,7 @@ interface QuoteData {
 }
 
 const Index = () => {
+  const [showAdminPanel, setShowAdminPanel] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>('');
   const [showNameModal, setShowNameModal] = useState<boolean>(false);
   const [userInput, setUserInput] = useState<string>('');
@@ -49,6 +51,14 @@ const Index = () => {
   const [expandedQuotes, setExpandedQuotes] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Проверяем, нужно ли показать админ-панель (например, по параметру URL)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true') {
+      setShowAdminPanel(true);
+    }
+  }, []);
 
   // Предзагруженные сообщения ботов
   const botMessages: BotMessage[] = [
@@ -238,6 +248,11 @@ const Index = () => {
     return `Сегодня в ${time}`;
   };
 
+  // Показать админ-панель, если активирована
+  if (showAdminPanel) {
+    return <AdminPanel />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Заголовок */}
@@ -253,6 +268,15 @@ const Index = () => {
               </p>
             </div>
             <div className="flex items-center space-x-2">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowAdminPanel(true)}
+                className="text-xs"
+              >
+                <Icon name="Settings" size={14} className="mr-1" />
+                Админ
+              </Button>
               <div className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-xs text-muted-foreground">Онлайн</span>
