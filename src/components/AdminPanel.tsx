@@ -12,6 +12,8 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
+import WordPressExporter from '@/components/WordPressExporter';
+import AdvancedAnalytics from '@/components/AdvancedAnalytics';
 
 interface Bot {
   id: string;
@@ -265,10 +267,14 @@ const AdminPanel = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-7 lg:w-fit">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <Icon name="BarChart3" size={16} />
               <span>Панель управления</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center space-x-2">
+              <Icon name="TrendingUp" size={16} />
+              <span>Аналитика</span>
             </TabsTrigger>
             <TabsTrigger value="bots" className="flex items-center space-x-2">
               <Icon name="Bot" size={16} />
@@ -285,6 +291,10 @@ const AdminPanel = () => {
             <TabsTrigger value="design" className="flex items-center space-x-2">
               <Icon name="Palette" size={16} />
               <span>Дизайн</span>
+            </TabsTrigger>
+            <TabsTrigger value="export" className="flex items-center space-x-2">
+              <Icon name="Download" size={16} />
+              <span>Экспорт</span>
             </TabsTrigger>
           </TabsList>
 
@@ -378,6 +388,11 @@ const AdminPanel = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Расширенная аналитика */}
+          <TabsContent value="analytics" className="space-y-6">
+            <AdvancedAnalytics />
           </TabsContent>
 
           {/* Управление ботами */}
@@ -884,6 +899,16 @@ const AdminPanel = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Экспорт WordPress плагина */}
+          <TabsContent value="export" className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight">Экспорт WordPress плагина</h2>
+              <p className="text-muted-foreground">Создайте готовый к использованию WordPress плагин</p>
+            </div>
+            
+            <WordPressExporter />
           </TabsContent>
         </Tabs>
 
