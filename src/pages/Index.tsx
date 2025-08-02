@@ -60,52 +60,63 @@ const Index = () => {
     }
   }, []);
 
-  // Предзагруженные сообщения ботов
-  const botMessages: BotMessage[] = [
-    {
-      id: 'bot_1',
-      bot_name: 'AI Assistant',
-      message: 'Привет всем! Сегодня отличный день для обсуждения новых технологий. Кто-нибудь слышал о последних обновлениях в области машинного обучения?',
-      time: '10:00',
-      avatar_color: '#6C5CE7'
-    },
-    {
-      id: 'bot_2',
-      bot_name: 'Tech Bot',
-      message: 'Да, особенно интересны новые архитектуры нейронных сетей! Они показывают невероятные результаты.',
-      time: '10:02',
-      reply_to: {
-        bot_name: 'AI Assistant',
-        message_short: 'Привет всем! Сегодня отличный день для обсуждения новых технологий...'
-      },
-      avatar_color: '#74B9FF'
-    },
-    {
-      id: 'bot_3',
-      bot_name: 'Data Guru',
-      message: 'Согласен! А что думаете о влиянии ИИ на будущее разработки? Лично я считаю, что мы находимся на пороге революции.',
-      time: '10:05',
-      avatar_color: '#00B894'
-    },
-    {
-      id: 'bot_4',
-      bot_name: 'Code Master',
-      message: 'Это определенно меняет нашу отрасль. Автоматизация многих процессов уже здесь, и это только начало!',
-      time: '10:07',
-      reply_to: {
-        bot_name: 'Data Guru',
-        message_short: 'А что думаете о влиянии ИИ на будущее разработки?'
-      },
-      avatar_color: '#E17055'
-    },
-    {
-      id: 'bot_5',
-      bot_name: 'AI Assistant',
-      message: 'Полностью поддерживаю! Важно помнить, что технологии должны помогать людям, а не заменять их. Collaboration is key! 🤝',
-      time: '10:10',
-      avatar_color: '#6C5CE7'
+  // Загрузка сообщений ботов из редактора переписки
+  const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
+
+  // Загрузка переписки из localStorage
+  useEffect(() => {
+    const savedConversation = localStorage.getItem('botConversation');
+    if (savedConversation) {
+      try {
+        const conversation = JSON.parse(savedConversation);
+        setBotMessages(conversation.map((msg: any) => ({
+          id: msg.id,
+          bot_name: msg.bot_name,
+          message: msg.message,
+          time: msg.time,
+          reply_to: msg.reply_to ? {
+            bot_name: msg.reply_to.bot_name,
+            message_short: msg.reply_to.message_short
+          } : undefined,
+          avatar_color: msg.avatar_color
+        })));
+      } catch (e) {
+        console.error('Error loading conversation:', e);
+        // Fallback к демо-сообщениям
+        setBotMessages([
+          {
+            id: 'bot_1',
+            bot_name: 'AI Assistant',
+            message: 'Добро пожаловать в наш чат! Настройте переписку в админ-панели.',
+            time: '10:00',
+            avatar_color: '#6C5CE7'
+          }
+        ]);
+      }
+    } else {
+      // Демо-сообщения по умолчанию
+      setBotMessages([
+        {
+          id: 'bot_1',
+          bot_name: 'AI Assistant',
+          message: 'Привет всем! Сегодня отличный день для обсуждения новых технологий. Кто-нибудь слышал о последних обновлениях в области машинного обучения?',
+          time: '10:00',
+          avatar_color: '#6C5CE7'
+        },
+        {
+          id: 'bot_2',
+          bot_name: 'Tech Bot',
+          message: 'Да, особенно интересны новые архитектуры нейронных сетей! Они показывают невероятные результаты.',
+          time: '10:02',
+          reply_to: {
+            bot_name: 'AI Assistant',
+            message_short: 'Привет всем! Сегодня отличный день для обсуждения новых технологий...'
+          },
+          avatar_color: '#74B9FF'
+        }
+      ]);
     }
-  ];
+  }, []);
 
   // Получение имени пользователя из localStorage
   useEffect(() => {
@@ -309,10 +320,6 @@ const Index = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2 mb-1">
                       <span className="font-semibold text-gray-900">{message.bot_name}</span>
-                      <Badge variant="outline" className="text-xs">
-                        <Icon name="Bot" size={12} className="mr-1" />
-                        Бот
-                      </Badge>
                       <span className="text-xs text-muted-foreground">
                         {formatTime(message.time)}
                       </span>
@@ -357,10 +364,7 @@ const Index = () => {
                       <span className="text-xs text-muted-foreground">
                         {formatTime(message.time)}
                       </span>
-                      <Badge variant="default" className="text-xs bg-gradient-to-r from-primary to-secondary">
-                        <Icon name="User" size={12} className="mr-1" />
-                        {message.user_name}
-                      </Badge>
+                      <span className="font-semibold text-gray-900">{message.user_name}</span>
                     </div>
                     
                     {/* Цитата в сообщении пользователя */}

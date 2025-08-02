@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import Icon from '@/components/ui/icon';
 import WordPressExporter from '@/components/WordPressExporter';
 import AdvancedAnalytics from '@/components/AdvancedAnalytics';
+import ConversationEditor from '@/components/ConversationEditor';
+import PrivacySystem from '@/components/PrivacySystem';
 
 interface Bot {
   id: string;
@@ -267,7 +269,7 @@ const AdminPanel = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7 lg:w-fit">
+          <TabsList className="grid w-full grid-cols-9 lg:w-fit">
             <TabsTrigger value="dashboard" className="flex items-center space-x-2">
               <Icon name="BarChart3" size={16} />
               <span>Панель управления</span>
@@ -276,6 +278,10 @@ const AdminPanel = () => {
               <Icon name="TrendingUp" size={16} />
               <span>Аналитика</span>
             </TabsTrigger>
+            <TabsTrigger value="conversation" className="flex items-center space-x-2">
+              <Icon name="MessageCircleMore" size={16} />
+              <span>Переписка</span>
+            </TabsTrigger>
             <TabsTrigger value="bots" className="flex items-center space-x-2">
               <Icon name="Bot" size={16} />
               <span>Боты</span>
@@ -283,6 +289,10 @@ const AdminPanel = () => {
             <TabsTrigger value="messages" className="flex items-center space-x-2">
               <Icon name="MessageSquare" size={16} />
               <span>Сообщения</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center space-x-2">
+              <Icon name="Shield" size={16} />
+              <span>Приватность</span>
             </TabsTrigger>
             <TabsTrigger value="telegram" className="flex items-center space-x-2">
               <Icon name="Send" size={16} />
@@ -393,6 +403,11 @@ const AdminPanel = () => {
           {/* Расширенная аналитика */}
           <TabsContent value="analytics" className="space-y-6">
             <AdvancedAnalytics />
+          </TabsContent>
+
+          {/* Редактор переписки ботов */}
+          <TabsContent value="conversation" className="space-y-6">
+            <ConversationEditor />
           </TabsContent>
 
           {/* Управление ботами */}
@@ -554,6 +569,11 @@ const AdminPanel = () => {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          {/* Система приватности */}
+          <TabsContent value="privacy" className="space-y-6">
+            <PrivacySystem />
           </TabsContent>
 
           {/* Настройки Telegram */}
