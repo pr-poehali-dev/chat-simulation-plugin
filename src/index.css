@@ -172,34 +172,97 @@
   ) !important;
 }
 
-/* Button hover effects - using data attributes instead of complex selectors */
-[data-hover-primary]:hover {
-  --tw-gradient-from: color-mix(
-    in srgb,
-    var(--design-primary-color) 90%,
-    black
+/* Custom gradient and color utilities */
+.bg-gradient-to-r.from-primary {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color),
+    var(--design-secondary-color)
   ) !important;
 }
 
-[data-hover-secondary]:hover {
-  --tw-gradient-to: color-mix(
-    in srgb,
-    var(--design-secondary-color) 90%,
-    black
+.bg-gradient-to-r.from-primary.to-secondary {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color),
+    var(--design-secondary-color)
+  ) !important;
+}
+
+.bg-gradient-to-br.from-indigo-50 {
+  background: linear-gradient(
+    to bottom right,
+    #eef2ff,
+    #ffffff,
+    #faf5ff
+  ) !important;
+}
+
+.text-primary {
+  color: var(--design-primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--design-primary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--design-primary-color) !important;
+}
+
+/* Button hover effects */
+.hover\\:from-primary\\/90:hover,
+.hover\\:to-secondary\\/90:hover {
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--design-primary-color) 90%, black),
+    color-mix(in srgb, var(--design-secondary-color) 90%, black)
   ) !important;
 }
 
 /* Focus states */
-[data-focus-primary]:focus {
+.focus\\:border-primary:focus {
   border-color: var(--design-primary-color) !important;
 }
 
-[data-focus-ring]:focus {
+.focus\\:ring-primary\\/20:focus {
   --tw-ring-color: color-mix(
     in srgb,
     var(--design-primary-color) 20%,
     transparent
   ) !important;
+}
+
+/* Text gradient support */
+.bg-clip-text {
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+}
+
+.text-transparent {
+  color: transparent !important;
+}
+
+/* Backdrop blur support */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px) !important;
+}
+
+/* Gradient backgrounds for specific components */
+.from-blue-50.to-purple-50 {
+  background: linear-gradient(to right, #eff6ff, #faf5ff) !important;
+}
+
+.from-yellow-50.to-orange-50 {
+  background: linear-gradient(to right, #fefce8, #fff7ed) !important;
+}
+
+.from-gray-100.to-gray-50 {
+  background: linear-gradient(to right, #f3f4f6, #f9fafb) !important;
+}
+
+.from-gray-200.to-gray-100 {
+  background: linear-gradient(to right, #e5e7eb, #f3f4f6) !important;
 }
 
 /* Animation classes that respect design speed */
