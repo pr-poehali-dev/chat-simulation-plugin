@@ -172,8 +172,8 @@
   ) !important;
 }
 
-/* Button hover effects */
-.hover\\:from-primary\\/90:hover {
+/* Button hover effects - using data attributes instead of complex selectors */
+[data-hover-primary]:hover {
   --tw-gradient-from: color-mix(
     in srgb,
     var(--design-primary-color) 90%,
@@ -181,7 +181,7 @@
   ) !important;
 }
 
-.hover\\:to-secondary\\/90:hover {
+[data-hover-secondary]:hover {
   --tw-gradient-to: color-mix(
     in srgb,
     var(--design-secondary-color) 90%,
@@ -190,11 +190,11 @@
 }
 
 /* Focus states */
-.focus\\:border-primary:focus {
+[data-focus-primary]:focus {
   border-color: var(--design-primary-color) !important;
 }
 
-.focus\\:ring-primary\\/20:focus {
+[data-focus-ring]:focus {
   --tw-ring-color: color-mix(
     in srgb,
     var(--design-primary-color) 20%,
