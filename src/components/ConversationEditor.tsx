@@ -118,24 +118,38 @@ const ConversationEditor = () => {
     localStorage.setItem('botConversation', JSON.stringify(newConversation));
     // Также дублируем в chatMessages для обратной совместимости
     localStorage.setItem('chatMessages', JSON.stringify(newConversation));
-    console.log('Переписка сохранена:', newConversation.length, 'сообщений');
-    toast({
-      title: "Переписка сохранена",
-      description: `${newConversation.length} сообщений сохранено`,
-    });
+    console.log('💾 Переписка сохранена:', newConversation.length, 'сообщений');
     
     // Триггерим обновление чата через событие
     window.dispatchEvent(new CustomEvent('conversation-updated', {
       detail: { conversation: newConversation }
     }));
+    
+    console.log('📡 Событие conversation-updated отправлено');
   };
 
   // Добавление нового сообщения
   const addMessage = () => {
-    if (!newMessage.bot_name || !newMessage.message) return;
+    console.log('🔥 ФУНКЦИЯ addMessage ВЫЗВАНА!');
+    console.log('📝 Попытка добавить сообщение:', newMessage);
+    console.log('🤖 Доступные боты:', bots);
+    console.log('💬 Текущая переписка:', conversation);
+    
+    if (!newMessage.bot_name || !newMessage.message.trim()) {
+      console.log('❌ Ошибка: не заполнены обязательные поля');
+      alert('Выберите бота и введите текст сообщения');
+      return;
+    }
 
     const selectedBot = bots.find(bot => bot.displayName === newMessage.bot_name);
-    if (!selectedBot) return;
+    console.log('🔍 Ищем бота с именем:', newMessage.bot_name);
+    console.log('✅ Найденный бот:', selectedBot);
+    
+    if (!selectedBot) {
+      console.log('❌ Ошибка: бот не найден');
+      alert('Выбранный бот не найден');
+      return;
+    }
 
     const replyTo = newMessage.reply_to_id ? 
       conversation.find(msg => msg.id === newMessage.reply_to_id) : null;
@@ -155,7 +169,11 @@ const ConversationEditor = () => {
       } : undefined
     };
 
+    console.log('✨ Создаём сообщение:', message);
+
     const newConversation = [...conversation, message];
+    console.log('📋 Новая переписка:', newConversation);
+    
     setConversation(newConversation);
     setNewMessage({
       bot_name: '',
@@ -166,6 +184,8 @@ const ConversationEditor = () => {
     });
     setShowAddMessage(false);
     saveConversation(newConversation);
+    
+    console.log('✅ Сообщение успешно добавлено!');
   };
 
   // Удаление сообщения

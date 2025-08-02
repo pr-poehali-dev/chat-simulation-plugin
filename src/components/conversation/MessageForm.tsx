@@ -160,7 +160,14 @@ const MessageForm: React.FC<MessageFormProps> = ({
             <Button variant="outline" onClick={handleCancel}>
               Отмена
             </Button>
-            <Button onClick={editingMessageId ? onSaveEdit : onAddMessage}>
+            <Button 
+              onClick={() => {
+                console.log('Кнопка нажата, вызываем:', editingMessageId ? 'onSaveEdit' : 'onAddMessage');
+                console.log('Текущее сообщение:', newMessage);
+                editingMessageId ? onSaveEdit() : onAddMessage();
+              }}
+              disabled={!newMessage.bot_name || !newMessage.message}
+            >
               {editingMessageId ? 'Сохранить' : 'Добавить'}
             </Button>
           </div>
