@@ -540,12 +540,12 @@ const Index = () => {
                   value={userInput}
                   onChange={(e) => setUserInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  className="bg-white border-gray-300 focus:border-primary focus:ring-primary/20"
+                  className="bg-white border-gray-300 input-primary"
                 />
               </div>
               <Button 
                 onClick={handleSendMessage}
-                className="bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90 shadow-lg"
+                className="bg-gradient-to-r from-primary to-secondary btn-primary shadow-lg"
                 disabled={!userInput.trim()}
               >
                 <Icon name="Send" size={16} className="mr-2" />

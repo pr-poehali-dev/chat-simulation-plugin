@@ -210,9 +210,8 @@
   background-color: var(--design-primary-color) !important;
 }
 
-/* Button hover effects */
-.hover\\:from-primary\\/90:hover,
-.hover\\:to-secondary\\/90:hover {
+/* Button hover effects - using simple selectors */
+.btn-primary:hover {
   background: linear-gradient(
     to right,
     color-mix(in srgb, var(--design-primary-color) 90%, black),
@@ -220,12 +219,9 @@
   ) !important;
 }
 
-/* Focus states */
-.focus\\:border-primary:focus {
+/* Focus states - using simple selectors */
+.input-primary:focus {
   border-color: var(--design-primary-color) !important;
-}
-
-.focus\\:ring-primary\\/20:focus {
   --tw-ring-color: color-mix(
     in srgb,
     var(--design-primary-color) 20%,
