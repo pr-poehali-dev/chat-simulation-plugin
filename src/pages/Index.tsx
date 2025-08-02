@@ -151,8 +151,34 @@ const Index = () => {
     
     window.addEventListener('conversation-updated', handleConversationUpdate as EventListener);
     
+    // Слушаем обновления дизайна из админ-панели
+    const handleDesignUpdate = (event: CustomEvent) => {
+      console.log('🎨 Получено обновление дизайна:', event.detail);
+      const settings = event.detail.settings;
+      
+      // Применяем CSS переменные
+      document.documentElement.style.setProperty('--design-primary-color', settings.primaryColor);
+      document.documentElement.style.setProperty('--design-secondary-color', settings.secondaryColor);
+      document.documentElement.style.setProperty('--design-accent-color', settings.accentColor);
+      document.documentElement.style.setProperty('--design-background-color', settings.backgroundColor);
+      document.documentElement.style.setProperty('--design-font-family', settings.fontFamily);
+      document.documentElement.style.setProperty('--design-border-radius', settings.borderRadius);
+      document.documentElement.style.setProperty('--design-animation-speed', settings.animationSpeed);
+      
+      // Добавляем класс для плавного перехода
+      document.body.classList.add('design-apply');
+      
+      setTimeout(() => {
+        document.body.classList.remove('design-apply');
+      }, parseInt(settings.animationSpeed) || 300);
+    };
+    
+    window.addEventListener('conversation-updated', handleConversationUpdate as EventListener);
+    window.addEventListener('design-updated', handleDesignUpdate as EventListener);
+    
     return () => {
       window.removeEventListener('conversation-updated', handleConversationUpdate as EventListener);
+      window.removeEventListener('design-updated', handleDesignUpdate as EventListener);
     };
   }, []);
 
@@ -210,12 +236,44 @@ const Index = () => {
       } : undefined
     };
 
-    setUserMessages(prev => [...prev, newMessage]);
+    const updatedUserMessages = [...userMessages, newMessage];
+    setUserMessages(updatedUserMessages);
     setUserInput('');
     setQuotedMessage(null);
     
-    // Симуляция отправки в Telegram (здесь будет реальная интеграция)
-    console.log('Отправка в Telegram:', newMessage);
+    // Сохраняем сообщения пользователей в localStorage для админки
+    localStorage.setItem('userMessages', JSON.stringify(updatedUserMessages));
+    
+    // Уведомляем админку о новом сообщении
+    window.dispatchEvent(new CustomEvent('user-message-added', {
+      detail: { message: newMessage, allMessages: updatedUserMessages }
+    }));
+    
+    console.log('💬 Сообщение пользователя сохранено:', newMessage);
+    
+    // Симуляция отправки в Telegram (если подключен)
+    try {
+      const telegramSettings = JSON.parse(localStorage.getItem('telegramSettings') || '{}');
+      if (telegramSettings.isConnected && telegramSettings.botToken && telegramSettings.chatId) {
+        const telegramMessage = `👤 ${newMessage.user_name}: ${newMessage.message}`;
+        
+        fetch(`https://api.telegram.org/bot${telegramSettings.botToken}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: telegramSettings.chatId,
+            text: telegramMessage,
+            parse_mode: 'HTML'
+          })
+        }).then(response => response.json()).then(result => {
+          if (result.ok) {
+            console.log('📱 Сообщение отправлено в Telegram:', result.result);
+          }
+        }).catch(err => console.error('❌ Ошибка Telegram:', err));
+      }
+    } catch (err) {
+      console.error('❌ Ошибка обработки Telegram:', err);
+    }
   };
 
   const handleSaveUserName = () => {

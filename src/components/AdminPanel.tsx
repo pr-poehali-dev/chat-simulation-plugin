@@ -135,6 +135,19 @@ const AdminPanel = () => {
       setActiveTab(savedTab);
       localStorage.removeItem('admin-tab'); // Убираем после использования
     }
+    
+    // Слушаем новые сообщения пользователей
+    const handleUserMessage = (event: CustomEvent) => {
+      console.log('🔔 Получено новое сообщение пользователя:', event.detail);
+      const allUserMessages = event.detail.allMessages;
+      setUserMessages(allUserMessages);
+    };
+    
+    window.addEventListener('user-message-added', handleUserMessage as EventListener);
+    
+    return () => {
+      window.removeEventListener('user-message-added', handleUserMessage as EventListener);
+    };
   }, []);
 
   // Сохранение настроек
@@ -215,30 +228,120 @@ const AdminPanel = () => {
 
   // Тестирование Telegram подключения
   const testTelegramConnection = async () => {
-    if (!telegramSettings.botToken) return;
+    if (!telegramSettings.botToken) {
+      alert('Введите Bot Token');
+      return;
+    }
 
     try {
-      // Здесь будет реальная проверка API
-      console.log('Testing Telegram connection...');
-      setTelegramSettings(prev => ({ ...prev, isConnected: true }));
-      saveSettings();
+      console.log('🤖 Тестируем Telegram API...');
+      
+      // Реальный запрос к Telegram API
+      const response = await fetch(`https://api.telegram.org/bot${telegramSettings.botToken}/getMe`);
+      const data = await response.json();
+      
+      if (data.ok) {
+        setTelegramSettings(prev => ({ ...prev, isConnected: true }));
+        saveSettings();
+        
+        // Показываем успешное уведомление
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+        notification.textContent = `✅ Бот "${data.result.first_name}" подключён!`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 5000);
+        
+        console.log('✅ Telegram бот подключён:', data.result);
+      } else {
+        throw new Error(data.description || 'Неверный токен');
+      }
     } catch (error) {
-      console.error('Telegram connection failed:', error);
+      console.error('❌ Telegram connection failed:', error);
       setTelegramSettings(prev => ({ ...prev, isConnected: false }));
+      
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = `❌ Ошибка: ${error.message}`;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 5000);
     }
   };
 
-  // Отправка ответа пользователю
-  const sendReply = () => {
+  // Отправка ответа пользователю через Telegram
+  const sendReply = async () => {
     if (!currentMessage || !selectedBot || !replyMessage.trim()) return;
 
-    // Здесь будет логика отправки ответа от выбранного бота
-    console.log(`Reply from ${selectedBot}: ${replyMessage}`);
-    
-    // Обновляем статус сообщения
-    setUserMessages(prev => prev.map(msg => 
-      msg.id === currentMessage.id ? { ...msg, replied: true } : msg
-    ));
+    const selectedBotData = bots.find(bot => bot.id === selectedBot);
+    if (!selectedBotData) return;
+
+    try {
+      // Если Telegram подключён, отправляем реальное сообщение
+      if (telegramSettings.isConnected && telegramSettings.botToken && telegramSettings.chatId) {
+        const message = `🤖 ${selectedBotData.displayName}: ${replyMessage}`;
+        
+        const response = await fetch(`https://api.telegram.org/bot${telegramSettings.botToken}/sendMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            chat_id: telegramSettings.chatId,
+            text: message,
+            parse_mode: 'HTML'
+          })
+        });
+        
+        const result = await response.json();
+        if (result.ok) {
+          console.log('✅ Ответ отправлен в Telegram:', result.result);
+        } else {
+          throw new Error(result.description || 'Ошибка отправки');
+        }
+      }
+      
+      // Обновляем статус сообщения
+      const updatedMessages = userMessages.map(msg => 
+        msg.id === currentMessage.id ? { ...msg, replied: true } : msg
+      );
+      setUserMessages(updatedMessages);
+      localStorage.setItem('userMessages', JSON.stringify(updatedMessages));
+      
+      // Показываем успешное уведомление
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = '✅ Ответ отправлен!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+      
+    } catch (error) {
+      console.error('❌ Ошибка отправки:', error);
+      
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = `❌ Ошибка: ${error.message}`;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }
 
     setShowReplyDialog(false);
     setReplyMessage('');
@@ -251,21 +354,33 @@ const AdminPanel = () => {
     setShowReplyDialog(true);
   };
 
-  // Применение дизайна
+  // Применение дизайна в реальном времени
   const applyDesign = () => {
     try {
-      // Применяем CSS переменные
-      document.documentElement.style.setProperty('--primary-color', designSettings.primaryColor);
-      document.documentElement.style.setProperty('--secondary-color', designSettings.secondaryColor);
-      document.documentElement.style.setProperty('--accent-color', designSettings.accentColor);
-      document.documentElement.style.setProperty('--background-color', designSettings.backgroundColor);
+      // Применяем CSS переменные для дизайна
+      document.documentElement.style.setProperty('--design-primary-color', designSettings.primaryColor);
+      document.documentElement.style.setProperty('--design-secondary-color', designSettings.secondaryColor);
+      document.documentElement.style.setProperty('--design-accent-color', designSettings.accentColor);
+      document.documentElement.style.setProperty('--design-background-color', designSettings.backgroundColor);
+      document.documentElement.style.setProperty('--design-font-family', designSettings.fontFamily);
+      document.documentElement.style.setProperty('--design-border-radius', designSettings.borderRadius);
+      document.documentElement.style.setProperty('--design-animation-speed', designSettings.animationSpeed);
+      
+      // Добавляем класс для анимированного обновления
+      document.body.classList.add('design-apply');
+      
+      // Уведомляем чат о смене дизайна
+      window.dispatchEvent(new CustomEvent('design-updated', {
+        detail: { settings: designSettings }
+      }));
       
       saveSettings();
       
       // Показываем уведомление
       const notification = document.createElement('div');
-      notification.className = 'fixed top-4 right-4 bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-      notification.textContent = '✨ Дизайн применён!';
+      notification.className = 'fixed top-4 right-4 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.style.background = `linear-gradient(135deg, ${designSettings.primaryColor}, ${designSettings.secondaryColor})`;
+      notification.textContent = '✨ Дизайн применён в реальном времени!';
       document.body.appendChild(notification);
       
       setTimeout(() => {
@@ -274,9 +389,20 @@ const AdminPanel = () => {
         }
       }, 3000);
       
-      console.log('✨ Дизайн успешно применён');
+      console.log('✨ Дизайн успешно применён:', designSettings);
     } catch (error) {
       console.error('❌ Ошибка при применении дизайна:', error);
+      
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = `❌ Ошибка: ${error.message}`;
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
     }
   };
 
@@ -388,9 +514,18 @@ const AdminPanel = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {bots.reduce((sum, bot) => sum + bot.messageCount, 0)}
+                    {(() => {
+                      const conversation = JSON.parse(localStorage.getItem('botConversation') || '[]');
+                      const todayUserMessages = userMessages.filter(msg => {
+                        const msgDate = new Date().toDateString();
+                        return new Date().toDateString() === msgDate; // Все сообщения считаются сегодняшними
+                      });
+                      return conversation.length + todayUserMessages.length;
+                    })()} 
                   </div>
-                  <p className="text-xs text-muted-foreground">+12% от вчера</p>
+                  <p className="text-xs text-muted-foreground">
+                    {userMessages.length} от пользователей + {JSON.parse(localStorage.getItem('botConversation') || '[]').length} от ботов
+                  </p>
                 </CardContent>
               </Card>
 
@@ -400,8 +535,12 @@ const AdminPanel = () => {
                   <Icon name="Users" className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{userMessages.length}</div>
-                  <p className="text-xs text-muted-foreground">новых сообщений</p>
+                  <div className="text-2xl font-bold">
+                    {new Set(userMessages.map(msg => msg.user_name)).size || 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {userMessages.length} сообщений от {new Set(userMessages.map(msg => msg.user_name)).size || 0} пользователей
+                  </p>
                 </CardContent>
               </Card>
 

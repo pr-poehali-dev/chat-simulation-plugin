@@ -99,3 +99,173 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom design variables for real-time updates */
+:root {
+  --design-primary-color: #6c5ce7;
+  --design-secondary-color: #74b9ff;
+  --design-accent-color: #00b894;
+  --design-background-color: #f8f9fa;
+  --design-font-family: "Inter", sans-serif;
+  --design-border-radius: 8px;
+  --design-animation-speed: 300ms;
+}
+
+/* Apply design variables globally */
+.design-apply {
+  transition: all var(--design-animation-speed) ease !important;
+}
+
+/* Real-time design CSS variables that override Tailwind */
+.bg-gradient-to-r.from-primary.to-secondary {
+  background: linear-gradient(
+    90deg,
+    var(--design-primary-color),
+    var(--design-secondary-color)
+  ) !important;
+}
+
+.bg-gradient-to-br.from-indigo-50.via-white.to-purple-50 {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--design-primary-color) 10%, white),
+    white,
+    color-mix(in srgb, var(--design-secondary-color) 10%, white)
+  ) !important;
+}
+
+.from-primary {
+  --tw-gradient-from: var(--design-primary-color) !important;
+}
+
+.to-secondary {
+  --tw-gradient-to: var(--design-secondary-color) !important;
+}
+
+.bg-primary {
+  background-color: var(--design-primary-color) !important;
+}
+
+.text-primary {
+  color: var(--design-primary-color) !important;
+}
+
+.border-primary {
+  border-color: var(--design-primary-color) !important;
+}
+
+/* Chat message background gradients */
+.from-blue-50.to-purple-50 {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--design-primary-color) 8%, white),
+    color-mix(in srgb, var(--design-secondary-color) 8%, white)
+  ) !important;
+}
+
+/* User message gradient */
+.from-primary.to-secondary {
+  background: linear-gradient(
+    135deg,
+    var(--design-primary-color),
+    var(--design-secondary-color)
+  ) !important;
+}
+
+/* Button hover effects */
+.hover\\:from-primary\\/90:hover {
+  --tw-gradient-from: color-mix(
+    in srgb,
+    var(--design-primary-color) 90%,
+    black
+  ) !important;
+}
+
+.hover\\:to-secondary\\/90:hover {
+  --tw-gradient-to: color-mix(
+    in srgb,
+    var(--design-secondary-color) 90%,
+    black
+  ) !important;
+}
+
+/* Focus states */
+.focus\\:border-primary:focus {
+  border-color: var(--design-primary-color) !important;
+}
+
+.focus\\:ring-primary\\/20:focus {
+  --tw-ring-color: color-mix(
+    in srgb,
+    var(--design-primary-color) 20%,
+    transparent
+  ) !important;
+}
+
+/* Animation classes that respect design speed */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--design-animation-speed) ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--design-animation-speed) ease-out;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--design-animation-speed) ease-out;
+}
+
+/* Font family override */
+body {
+  font-family: var(--design-font-family), system-ui, sans-serif !important;
+}
+
+/* Border radius updates */
+.rounded-lg {
+  border-radius: var(--design-border-radius) !important;
+}
+
+.rounded-full {
+  border-radius: 50% !important;
+}
+
+/* Ensure smooth transitions on design changes */
+* {
+  transition:
+    background-color var(--design-animation-speed) ease,
+    border-color var(--design-animation-speed) ease,
+    color var(--design-animation-speed) ease !important;
+}
