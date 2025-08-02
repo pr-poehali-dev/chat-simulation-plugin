@@ -131,10 +131,17 @@ const AdminPanel = () => {
     const savedBots = localStorage.getItem('adminBots');
     const savedTelegram = localStorage.getItem('telegramSettings');
     const savedDesign = localStorage.getItem('designSettings');
+    const savedTab = localStorage.getItem('admin-tab');
 
     if (savedBots) setBots(JSON.parse(savedBots));
     if (savedTelegram) setTelegramSettings(JSON.parse(savedTelegram));
     if (savedDesign) setDesignSettings(JSON.parse(savedDesign));
+    
+    // Открываем нужную вкладку если задано
+    if (savedTab) {
+      setActiveTab(savedTab);
+      localStorage.removeItem('admin-tab'); // Убираем после использования
+    }
   }, []);
 
   // Сохранение настроек
@@ -258,6 +265,14 @@ const AdminPanel = () => {
                 <div className={`w-2 h-2 rounded-full ${telegramSettings.isConnected ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 <span>{telegramSettings.isConnected ? 'Telegram подключен' : 'Telegram отключен'}</span>
               </Badge>
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.reload()}
+                className="border-primary text-primary hover:bg-primary hover:text-white"
+              >
+                <Icon name="ArrowLeft" size={16} className="mr-2" />
+                Вернуться в чат
+              </Button>
               <Button onClick={saveSettings} className="bg-gradient-to-r from-primary to-secondary">
                 <Icon name="Save" size={16} className="mr-2" />
                 Сохранить

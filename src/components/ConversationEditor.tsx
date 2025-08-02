@@ -4,8 +4,10 @@ import MessageForm from './conversation/MessageForm';
 import MessageList from './conversation/MessageList';
 import PreviewPanel from './conversation/PreviewPanel';
 import ImportExportActions from './conversation/ImportExportActions';
+import { useToast } from '@/hooks/use-toast';
 
 const ConversationEditor = () => {
+  const { toast } = useToast();
   const [conversation, setConversation] = useState<ConversationMessage[]>([
     {
       id: 'msg_1',
@@ -85,7 +87,9 @@ const ConversationEditor = () => {
     
     if (savedConversation) {
       try {
-        setConversation(JSON.parse(savedConversation));
+        const loadedConversation = JSON.parse(savedConversation);
+        setConversation(loadedConversation);
+        console.log('Переписка загружена из localStorage:', loadedConversation.length, 'сообщений');
       } catch (e) {
         console.error('Error loading conversation:', e);
       }
@@ -93,7 +97,16 @@ const ConversationEditor = () => {
     
     if (savedBots) {
       try {
-        setBots(JSON.parse(savedBots));
+        const loadedBots = JSON.parse(savedBots);
+        // Объединяем загруженных ботов с дефолтными, убирая дубликаты
+        const mergedBots = [
+          ...loadedBots,
+          ...bots.filter(defaultBot => 
+            !loadedBots.some((loadedBot: Bot) => loadedBot.name === defaultBot.name)
+          )
+        ];
+        setBots(mergedBots);
+        console.log('Боты загружены из localStorage:', mergedBots.length, 'ботов');
       } catch (e) {
         console.error('Error loading bots:', e);
       }
@@ -101,9 +114,20 @@ const ConversationEditor = () => {
   }, []);
 
   // Сохранение переписки
-  const saveConversation = () => {
-    localStorage.setItem('botConversation', JSON.stringify(conversation));
-    localStorage.setItem('chatMessages', JSON.stringify(conversation));
+  const saveConversation = (newConversation = conversation) => {
+    localStorage.setItem('botConversation', JSON.stringify(newConversation));
+    // Также дублируем в chatMessages для обратной совместимости
+    localStorage.setItem('chatMessages', JSON.stringify(newConversation));
+    console.log('Переписка сохранена:', newConversation.length, 'сообщений');
+    toast({
+      title: "Переписка сохранена",
+      description: `${newConversation.length} сообщений сохранено`,
+    });
+    
+    // Триггерим обновление чата через событие
+    window.dispatchEvent(new CustomEvent('conversation-updated', {
+      detail: { conversation: newConversation }
+    }));
   };
 
   // Добавление нового сообщения
@@ -131,7 +155,8 @@ const ConversationEditor = () => {
       } : undefined
     };
 
-    setConversation(prev => [...prev, message]);
+    const newConversation = [...conversation, message];
+    setConversation(newConversation);
     setNewMessage({
       bot_name: '',
       message: '',
@@ -140,13 +165,14 @@ const ConversationEditor = () => {
       delay_seconds: 3
     });
     setShowAddMessage(false);
-    saveConversation();
+    saveConversation(newConversation);
   };
 
   // Удаление сообщения
   const deleteMessage = (messageId: string) => {
-    setConversation(prev => prev.filter(msg => msg.id !== messageId));
-    saveConversation();
+    const newConversation = conversation.filter(msg => msg.id !== messageId);
+    setConversation(newConversation);
+    saveConversation(newConversation);
   };
 
   // Редактирование сообщения
@@ -175,7 +201,7 @@ const ConversationEditor = () => {
     const replyTo = newMessage.reply_to_id ? 
       conversation.find(msg => msg.id === newMessage.reply_to_id) : null;
 
-    setConversation(prev => prev.map(msg => 
+    const newConversation = conversation.map(msg => 
       msg.id === editingMessageId ? {
         ...msg,
         bot_name: newMessage.bot_name,
@@ -190,8 +216,9 @@ const ConversationEditor = () => {
           message_id: replyTo.id
         } : undefined
       } : msg
-    ));
-
+    );
+    
+    setConversation(newConversation);
     setEditingMessageId(null);
     setNewMessage({
       bot_name: '',
@@ -201,7 +228,7 @@ const ConversationEditor = () => {
       delay_seconds: 3
     });
     setShowAddMessage(false);
-    saveConversation();
+    saveConversation(newConversation);
   };
 
   // Перемещение сообщения
@@ -217,7 +244,7 @@ const ConversationEditor = () => {
     newConversation.splice(newIndex, 0, movedMessage);
 
     setConversation(newConversation);
-    saveConversation();
+    saveConversation(newConversation);
   };
 
   // Экспорт в JSON
@@ -238,6 +265,11 @@ const ConversationEditor = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Экспорт завершен",
+      description: "Файл переписки сохранен на ваш компьютер",
+    });
   };
 
   // Импорт из JSON
@@ -246,22 +278,35 @@ const ConversationEditor = () => {
       const data = JSON.parse(jsonInput);
       if (data.conversation && Array.isArray(data.conversation)) {
         setConversation(data.conversation);
-        saveConversation();
+        saveConversation(data.conversation);
         setJsonInput('');
         setShowJsonImport(false);
+        toast({
+          title: "Переписка импортирована",
+          description: `Загружено ${data.conversation.length} сообщений`,
+        });
       } else {
-        alert('Неверный формат JSON');
+        toast({
+          title: "Ошибка импорта",
+          description: "Неверный формат JSON: отсутствует поле conversation",
+          variant: "destructive",
+        });
       }
     } catch (e) {
-      alert('Ошибка парсинга JSON');
+      toast({
+        title: "Ошибка импорта",
+        description: "Ошибка парсинга JSON",
+        variant: "destructive",
+      });
     }
   };
 
   // Очистка переписки
   const clearConversation = () => {
     if (confirm('Вы уверены, что хотите очистить всю переписку?')) {
-      setConversation([]);
-      saveConversation();
+      const emptyConversation: ConversationMessage[] = [];
+      setConversation(emptyConversation);
+      saveConversation(emptyConversation);
     }
   };
 

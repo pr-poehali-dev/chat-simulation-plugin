@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import AdminPanel from '@/components/AdminPanel';
+import QuickActions from '@/components/QuickActions';
 
 interface BotMessage {
   id: string;
@@ -63,13 +64,13 @@ const Index = () => {
   // Загрузка сообщений ботов из редактора переписки
   const [botMessages, setBotMessages] = useState<BotMessage[]>([]);
 
-  // Загрузка переписки из localStorage
-  useEffect(() => {
+  // Загрузка переписки из localStorage и слушатель обновлений
+  const loadConversation = () => {
     const savedConversation = localStorage.getItem('botConversation');
     if (savedConversation) {
       try {
         const conversation = JSON.parse(savedConversation);
-        setBotMessages(conversation.map((msg: any) => ({
+        const mappedMessages = conversation.map((msg: any) => ({
           id: msg.id,
           bot_name: msg.bot_name,
           message: msg.message,
@@ -79,7 +80,12 @@ const Index = () => {
             message_short: msg.reply_to.message_short
           } : undefined,
           avatar_color: msg.avatar_color
-        })));
+        }));
+        setBotMessages(mappedMessages);
+        // Сбрасываем анимацию при загрузке новой переписки
+        setDisplayedBotMessages([]);
+        setMessageIndex(0);
+        console.log('Переписка загружена из админ-панели:', mappedMessages.length, 'сообщений');
       } catch (e) {
         console.error('Error loading conversation:', e);
         // Fallback к демо-сообщениям
@@ -116,6 +122,22 @@ const Index = () => {
         }
       ]);
     }
+  };
+
+  useEffect(() => {
+    loadConversation();
+    
+    // Слушаем обновления переписки из админ-панели
+    const handleConversationUpdate = (event: CustomEvent) => {
+      console.log('Получено обновление переписки:', event.detail);
+      loadConversation();
+    };
+    
+    window.addEventListener('conversation-updated', handleConversationUpdate as EventListener);
+    
+    return () => {
+      window.removeEventListener('conversation-updated', handleConversationUpdate as EventListener);
+    };
   }, []);
 
   // Получение имени пользователя из localStorage
@@ -126,17 +148,24 @@ const Index = () => {
     }
   }, []);
 
-  // Анимированное появление сообщений ботов
+  // Анимированное появление сообщений ботов с настраиваемыми задержками
   useEffect(() => {
     if (messageIndex < botMessages.length) {
+      const currentMessage = botMessages[messageIndex];
+      // Используем delay_seconds из сообщения или дефолтную задержку
+      const delay = (currentMessage as any)?.delay_seconds ? 
+        (currentMessage as any).delay_seconds * 1000 : 
+        2000 + Math.random() * 1000;
+      
       const timer = setTimeout(() => {
         setDisplayedBotMessages(prev => [...prev, botMessages[messageIndex]]);
         setMessageIndex(prev => prev + 1);
-      }, 2000 + Math.random() * 1000); // Случайная задержка от 2 до 3 секунд
+        console.log(`Показано сообщение ${messageIndex + 1} из ${botMessages.length}`);
+      }, delay);
 
       return () => clearTimeout(timer);
     }
-  }, [messageIndex, botMessages.length]);
+  }, [messageIndex, botMessages]);
 
   // Автоскролл к концу чата
   useEffect(() => {
@@ -283,14 +312,14 @@ const Index = () => {
                 variant="ghost" 
                 size="sm"
                 onClick={() => setShowAdminPanel(true)}
-                className="text-xs"
+                className="text-xs hover:bg-primary/10"
               >
                 <Icon name="Settings" size={14} className="mr-1" />
-                Админ
+                Админ-панель
               </Button>
               <div className="flex items-center space-x-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs text-muted-foreground">Онлайн</span>
+                <span className="text-xs text-muted-foreground">Переписка: {botMessages.length}</span>
               </div>
             </div>
           </div>
@@ -494,6 +523,9 @@ const Index = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Быстрые действия */}
+      <QuickActions onOpenAdmin={() => setShowAdminPanel(true)} />
     </div>
   );
 };
