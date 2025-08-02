@@ -151,7 +151,7 @@ const ConversationEditor = () => {
       return;
     }
 
-    const replyTo = newMessage.reply_to_id ? 
+    const replyTo = (newMessage.reply_to_id && newMessage.reply_to_id !== 'no-reply') ? 
       conversation.find(msg => msg.id === newMessage.reply_to_id) : null;
 
     const message: ConversationMessage = {
@@ -218,7 +218,7 @@ const ConversationEditor = () => {
     const selectedBot = bots.find(bot => bot.displayName === newMessage.bot_name);
     if (!selectedBot) return;
 
-    const replyTo = newMessage.reply_to_id ? 
+    const replyTo = (newMessage.reply_to_id && newMessage.reply_to_id !== 'no-reply') ? 
       conversation.find(msg => msg.id === newMessage.reply_to_id) : null;
 
     const newConversation = conversation.map(msg => 

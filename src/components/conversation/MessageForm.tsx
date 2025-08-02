@@ -122,7 +122,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
                 <SelectValue placeholder="Выберите сообщение для ответа" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Без ответа</SelectItem>
+                <SelectItem value="no-reply">Без ответа</SelectItem>
                 {conversation.map(msg => (
                   <SelectItem key={msg.id} value={msg.id}>
                     {msg.bot_name}: {msg.message.length > 30 ? msg.message.substring(0, 30) + '...' : msg.message}
