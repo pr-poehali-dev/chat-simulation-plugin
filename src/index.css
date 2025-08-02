@@ -172,24 +172,17 @@
   ) !important;
 }
 
-/* Custom gradient and color utilities */
-.bg-gradient-to-r.from-primary {
-  background: linear-gradient(
-    to right,
-    var(--design-primary-color),
-    var(--design-secondary-color)
-  ) !important;
-}
-
+/* Custom gradient and color utilities with high specificity */
+.bg-gradient-to-r.from-primary,
 .bg-gradient-to-r.from-primary.to-secondary {
   background: linear-gradient(
     to right,
-    var(--design-primary-color),
-    var(--design-secondary-color)
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
   ) !important;
 }
 
-.bg-gradient-to-br.from-indigo-50 {
+.bg-gradient-to-br.from-indigo-50.via-white.to-purple-50 {
   background: linear-gradient(
     to bottom right,
     #eef2ff,
@@ -198,16 +191,27 @@
   ) !important;
 }
 
+/* Primary color utilities */
 .text-primary {
-  color: var(--design-primary-color) !important;
+  color: var(--design-primary-color, #6c5ce7) !important;
 }
 
 .border-primary {
-  border-color: var(--design-primary-color) !important;
+  border-color: var(--design-primary-color, #6c5ce7) !important;
 }
 
 .bg-primary {
-  background-color: var(--design-primary-color) !important;
+  background-color: var(--design-primary-color, #6c5ce7) !important;
+}
+
+/* Specific button gradients that override Tailwind */
+.bg-gradient-to-r.from-primary.to-secondary.shadow-lg,
+.bg-gradient-to-r.from-primary.to-secondary.btn-primary {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
+  ) !important;
 }
 
 /* Button hover effects - using simple selectors */
@@ -220,16 +224,31 @@
 }
 
 /* Focus states - using simple selectors */
-.input-primary:focus {
-  border-color: var(--design-primary-color) !important;
+.input-primary:focus,
+input:focus {
+  border-color: var(--design-primary-color, #6c5ce7) !important;
   --tw-ring-color: color-mix(
     in srgb,
-    var(--design-primary-color) 20%,
+    var(--design-primary-color, #6c5ce7) 20%,
     transparent
   ) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--design-primary-color, #6c5ce7) 20%, transparent) !important;
 }
 
-/* Text gradient support */
+/* Text gradient support - force text gradients to work */
+.bg-gradient-to-r.from-primary.to-secondary.bg-clip-text.text-transparent {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
+  ) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
 .bg-clip-text {
   -webkit-background-clip: text !important;
   background-clip: text !important;
@@ -244,7 +263,7 @@
   backdrop-filter: blur(4px) !important;
 }
 
-/* Gradient backgrounds for specific components */
+/* Component-specific gradients */
 .from-blue-50.to-purple-50 {
   background: linear-gradient(to right, #eff6ff, #faf5ff) !important;
 }
@@ -259,6 +278,64 @@
 
 .from-gray-200.to-gray-100 {
   background: linear-gradient(to right, #e5e7eb, #f3f4f6) !important;
+}
+
+/* Additional design system utilities */
+.hover-primary-light:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--design-primary-color, #6c5ce7) 10%,
+    transparent
+  ) !important;
+}
+
+/* User message gradients */
+.bg-gradient-to-r.from-primary.to-secondary.text-white {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
+  ) !important;
+  color: white !important;
+}
+
+/* Avatar gradients */
+.bg-gradient-to-r.from-primary.to-secondary.flex.items-center.justify-center {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
+  ) !important;
+}
+
+/* Global overrides to make design work */
+[class*="hover:bg-primary/10"]:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--design-primary-color, #6c5ce7) 10%,
+    transparent
+  ) !important;
+}
+
+[class*="focus:border-primary"]:focus {
+  border-color: var(--design-primary-color, #6c5ce7) !important;
+}
+
+[class*="focus:ring-primary"]:focus {
+  --tw-ring-color: color-mix(
+    in srgb,
+    var(--design-primary-color, #6c5ce7) 20%,
+    transparent
+  ) !important;
+}
+
+/* Ensure all primary gradients work */
+[class*="from-primary"][class*="to-secondary"] {
+  background: linear-gradient(
+    to right,
+    var(--design-primary-color, #6c5ce7),
+    var(--design-secondary-color, #74b9ff)
+  ) !important;
 }
 
 /* Animation classes that respect design speed */

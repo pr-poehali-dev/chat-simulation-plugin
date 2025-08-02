@@ -386,7 +386,7 @@ const Index = () => {
                 variant="ghost" 
                 size="sm"
                 onClick={() => setShowAdminPanel(true)}
-                className="text-xs hover:bg-primary/10"
+                className="text-xs hover-primary-light"
               >
                 <Icon name="Settings" size={14} className="mr-1" />
                 Админ-панель
